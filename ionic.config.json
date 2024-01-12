@@ -1,0 +1,7 @@
+{
+  "name": "AppVuelos",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
