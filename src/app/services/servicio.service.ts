@@ -4,6 +4,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class ServicioService {
+  // ARREGLOS PARA ALMACENAR LOS VALORES DE MANERA PERMANENTE
   lugares: Lugares[] = [];
   mislugares: MisLugares[] = [];
 
@@ -13,6 +14,7 @@ export class ServicioService {
   apikey = '5ae2e3f221c38a28845f05b6f9b75e642de6b2ae386eaf2dcd9a68ca';
   name = 'teatro';
 
+  // FUNCION PARA OBTENER LISTADO DE LUGARES DESDE API
   async getAutosuggest(): Promise<Lugar[]> {
     const path =
       'en/places/autosuggest?format=json&name=' +
@@ -31,8 +33,8 @@ export class ServicioService {
       throw error;
     }
   }
-  // : Promise<Lugares[]>
 
+  // FUNCION PARA OBTENER UN LUGAR ESPECIFICO POR ID DESDE API
   async getXid(xid: string): Promise<LugarDetalle> {
     const path = 'en/places/xid/' + xid + '?apikey=' + this.apikey;
     const url = `${this._baseUrl}${path}`;
@@ -46,6 +48,7 @@ export class ServicioService {
     }
   }
 
+  // FUNCION PARA AGREGAR REGISTRO A LISTA LUGARES "PARA AGREGAR"
   async getRegistroDetalle(xid: string): Promise<Lugares> {
     const res = await this.getXid(xid);
     return {
@@ -57,6 +60,7 @@ export class ServicioService {
     };
   }
 
+  // FUNCION QUE OBTIENE LISTA DE LUGARES PARA AGREGAR DESDE API
   async getRegistro(): Promise<Lugares[]> {
     this.lugares = [];
     const res = await this.getAutosuggest();
@@ -67,14 +71,17 @@ export class ServicioService {
     return this.lugares;
   }
 
+  // FUNCION PARA AGREGAR REGISTRO A LISTA MISLUGARES
   addMisLugares(milugar: MisLugares) {
     this.mislugares.push(milugar);
   }
 
+  // FUNCION PARA RETORNAR LISTA MISLUGARES
   getMisLugares() {
     return this.mislugares;
   }
 
+  // FUNCION PARA ACTUALIZAR PRECIO DEL LISTA MISLUGARES
   updateMisLugares(valor: number, xid: string | undefined) {
     console.log(xid, valor);
     this.mislugares.forEach((objeto) => {
@@ -84,6 +91,7 @@ export class ServicioService {
     });
   }
 
+  // FUNCION PARA ELIMINAR DE LISTA MISLUGARES
   deleteMisLugares(xid?: string) {
     const index = this.mislugares.findIndex((objeto) => objeto.xid === xid);
 
@@ -94,6 +102,9 @@ export class ServicioService {
   }
 } // fin clase servicio
 
+// ENTIDADES PARA FUNCIONAMIENTO DE LA APP
+
+// INTERFASE PARA LISTA DE LUGARES PARA AGREGAR
 export interface Lugares {
   xid: string;
   name: string;
@@ -101,6 +112,7 @@ export interface Lugares {
   imageurl: string;
 }
 
+// INTERFASE PARA LISTA DE LUGARES AGREGADOS
 export interface MisLugares {
   xid?: string;
   name?: string;
@@ -108,6 +120,8 @@ export interface MisLugares {
   imageurl?: string;
   precio?: number;
 }
+
+// ENTIDADES PARA APIS
 
 // API getAutosuggest
 export interface Lugar {

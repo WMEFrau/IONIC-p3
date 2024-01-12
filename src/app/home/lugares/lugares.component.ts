@@ -29,14 +29,14 @@ import {
   imports: [IonicModule, CommonModule, FormsModule, NgFor, RouterModule],
 })
 export class LugaresComponent implements OnInit {
+  // ARREGLOS VACIOS PARA MOSTRAR EN PANTALLA
   lugares: Lugares[] = [];
   misLugares: MisLugares[] = [];
 
-  xidSeleccionado: string | undefined = '';
-  coctelSeleccionado: MisLugares | undefined = undefined;
-  modalLugaresAbierto: boolean = false;
-  toastMensaje: string = '';
-  modalinput: any;
+  xidSeleccionado: string | undefined = ''; // ID DE LA LISTA PARA EL MODAL
+  modalLugaresAbierto: boolean = false; // VARIABLE QUE INDICA CUANDO DEBE MOSTRARSE/OCULTARSE EL MODAL
+  toastMensaje: string = ''; // SE UTILIZARA PARA MOSTRAR MENSAJE CON ACCIONES ** AUN SIN APLICAR
+  modalinput: any; // INPUT DEL MODAL -> SE CAPTURA EL VALOR
 
   constructor(private servicio: ServicioService) {
     addIcons({ addCircleOutline, airplane, camera, trash, searchCircle });
@@ -46,6 +46,7 @@ export class LugaresComponent implements OnInit {
     this.ionViewWillEnter();
   }
 
+  // ACCION BOTON + -> AGREGAR REGISTRO A LISTA MISLUGARES
   addnewPlace(xid: string) {
     const lugar = this.lugares.find((x) => x.xid === xid);
 
@@ -58,28 +59,37 @@ export class LugaresComponent implements OnInit {
     this.ionViewWillEnter();
   }
 
+  // ACCION AL APRETAR AVION -> ABRIR MODAL Y CAPTURAR ID SELECCIONADO
   abrirModalLugares(xid?: string) {
     this.modalLugaresAbierto = true;
     this.xidSeleccionado = xid;
   }
 
+  // ACCIONES AL CERRAR MODAL -> QUITAR MODAL DE PANTALLA
   cancel() {
     this.modalLugaresAbierto = false;
   }
 
+  // ACCIONES AL CONFIRMAR MODAL -> MODIFICAR PRECIO
   confirm() {
     this.servicio.updateMisLugares(this.modalinput, this.xidSeleccionado);
     this.modalLugaresAbierto = false;
     this.ionViewWillEnter();
   }
 
+  //  RECARGA DE LISTADOS AL INICIAR O REALIZAR CAMBIOS
   async ionViewWillEnter() {
     this.misLugares = this.servicio.getMisLugares();
     this.lugares = await this.servicio.getRegistro();
   }
 
-  foto: Photo | null = null;
+  // ACCION BOTON ELIMINAR -> ELIMINAR EL REGISTRO DEL LISTADO MISLUGARES
+  eliminarLugar(xid?: string) {
+    this.servicio.deleteMisLugares(xid);
+  }
 
+  // SE UTILIZARA PARA CAPTURAR IMAGEN Y ACTUALIZAR REGISTRO EN LA LISTA ** POR REALIZAR
+  foto: Photo | null = null;
   async sacarFoto() {
     this.foto = await Camera.getPhoto({
       quality: 90,
@@ -89,9 +99,5 @@ export class LugaresComponent implements OnInit {
     });
 
     console.log(this.foto);
-  }
-
-  eliminarLugar(xid?: string) {
-    this.servicio.deleteMisLugares(xid);
   }
 }
