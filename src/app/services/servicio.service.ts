@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { bus } from 'ionicons/icons';
 
 @Injectable({
   providedIn: 'root',
@@ -16,6 +17,7 @@ export class ServicioService {
 
   // FUNCION PARA OBTENER LISTADO DE LUGARES DESDE API
   async getAutosuggest(): Promise<Lugar[]> {
+    console.log(this.name);
     const path =
       'en/places/autosuggest?format=json&name=' +
       this.name +
@@ -23,7 +25,6 @@ export class ServicioService {
       this.apikey +
       '&limit=3';
     const url = `${this._baseUrl}${path}`;
-
     try {
       const res = await fetch(url);
       const data = await res.json();
@@ -60,9 +61,14 @@ export class ServicioService {
     };
   }
 
-  // FUNCION QUE OBTIENE LISTA DE LUGARES PARA AGREGAR DESDE API
-  async getRegistro(): Promise<Lugares[]> {
+  // FUNCION QUE OBTIENE LISTA DE LUGARES PARA AGREGAR DESDE API / SE AÑADE PARAMETRO PARA BUSQUEDA DE LUGAR
+  async getRegistro(busqueda: string): Promise<Lugares[]> {
     this.lugares = [];
+    console.log('getregistro', busqueda);
+    if (busqueda && busqueda.trim() !== '') {
+      this.name = busqueda;
+    }
+
     const res = await this.getAutosuggest();
     res.forEach(async (element) => {
       this.lugares.push(await this.getRegistroDetalle(element.xid));
@@ -71,9 +77,15 @@ export class ServicioService {
     return this.lugares;
   }
 
-  // FUNCION PARA AGREGAR REGISTRO A LISTA MISLUGARES
-  addMisLugares(milugar: MisLugares) {
-    this.mislugares.push(milugar);
+  // FUNCION PARA AGREGAR REGISTRO A LISTA MISLUGARES / SE AÑADE MENSAJE DE RESPUESTA
+  addMisLugares(milugar: MisLugares): { mensaje: string; tipo: string } {
+    var existe = this.mislugares.find((x) => x.xid === milugar.xid);
+    if (!existe) {
+      this.mislugares.push(milugar);
+      return { mensaje: 'Añadido a la lista correctamente', tipo: 'success' };
+    } else {
+      return { mensaje: 'Registro ya existe en la lista', tipo: 'warning' };
+    }
   }
 
   // FUNCION PARA RETORNAR LISTA MISLUGARES
@@ -81,24 +93,64 @@ export class ServicioService {
     return this.mislugares;
   }
 
-  // FUNCION PARA ACTUALIZAR PRECIO DEL LISTA MISLUGARES
-  updateMisLugares(valor: number, xid: string | undefined) {
-    console.log(xid, valor);
+  // FUNCION PARA ACTUALIZAR PRECIO DEL LISTA MISLUGARES / SE AÑADE MENSAJE DE RESPUESTA
+  updateMisLugares(
+    valor: number,
+    xid: string | undefined
+  ): { mensaje: string; tipo: string } {
+    var msg: string = '';
+    var tipo: string = '';
     this.mislugares.forEach((objeto) => {
       if (objeto.xid === xid) {
         objeto.precio = valor;
+        msg = 'Precio actualizado correctamente';
+        tipo = 'success';
       }
     });
+    if (!msg) {
+      msg = 'Imagen no pudo ser actualizada';
+      tipo = 'warning';
+    }
+
+    return { mensaje: msg, tipo: tipo };
   }
 
-  // FUNCION PARA ELIMINAR DE LISTA MISLUGARES
-  deleteMisLugares(xid?: string) {
+  // FUNCION PARA ELIMINAR DE LISTA MISLUGARES / SE AÑADE MENSAJE DE RESPUESTA
+  deleteMisLugares(xid?: string): { mensaje: string; tipo: string } {
     const index = this.mislugares.findIndex((objeto) => objeto.xid === xid);
-
     // Si se encuentra el objeto, elimínalo de la lista
     if (index !== -1) {
       this.mislugares.splice(index, 1);
+      return {
+        mensaje: 'Registro fue eliminado correctamente',
+        tipo: 'success',
+      };
+    } else {
+      return { mensaje: 'Registro no pudo ser eliminado', tipo: 'warning' };
     }
+  }
+
+  // FUNCION PARA ACTUALIZAR IMAGEN DEL LISTA MISLUGARES / SE AÑADE MENSAJE DE RESPUESTA
+  updateIMGMisLugares(
+    imagePath: string | undefined,
+    xid: string | undefined
+  ): { mensaje: string; tipo: string } {
+    var msg: string = '';
+    var tipo: string = '';
+    this.mislugares.forEach((objeto) => {
+      if (objeto.xid === xid) {
+        objeto.imageurl = imagePath;
+        msg = 'Imagen actualizada correctamente';
+        tipo = 'success';
+      }
+    });
+
+    if (!msg) {
+      msg = 'Imagen no pudo ser actualizada';
+      tipo = 'warning';
+    }
+
+    return { mensaje: msg, tipo: tipo };
   }
 } // fin clase servicio
 

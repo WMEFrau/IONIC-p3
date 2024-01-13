@@ -8,7 +8,7 @@ import {
 
 import { CommonModule, NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ToastController } from '@ionic/angular';
 import { Camera, Photo, CameraResultType } from '@capacitor/camera';
 import { RouterModule } from '@angular/router';
 
@@ -32,13 +32,17 @@ export class LugaresComponent implements OnInit {
   // ARREGLOS VACIOS PARA MOSTRAR EN PANTALLA
   lugares: Lugares[] = [];
   misLugares: MisLugares[] = [];
+  busqueda: string = '';
 
   xidSeleccionado: string | undefined = ''; // ID DE LA LISTA PARA EL MODAL
   modalLugaresAbierto: boolean = false; // VARIABLE QUE INDICA CUANDO DEBE MOSTRARSE/OCULTARSE EL MODAL
   toastMensaje: string = ''; // SE UTILIZARA PARA MOSTRAR MENSAJE CON ACCIONES ** AUN SIN APLICAR
   modalinput: any; // INPUT DEL MODAL -> SE CAPTURA EL VALOR
 
-  constructor(private servicio: ServicioService) {
+  constructor(
+    private servicio: ServicioService,
+    private toastController: ToastController
+  ) {
     addIcons({ addCircleOutline, airplane, camera, trash, searchCircle });
   }
 
@@ -50,13 +54,16 @@ export class LugaresComponent implements OnInit {
   addnewPlace(xid: string) {
     const lugar = this.lugares.find((x) => x.xid === xid);
 
-    this.servicio.addMisLugares({
+    var respuesta = this.servicio.addMisLugares({
       xid: lugar?.xid,
       name: lugar?.name,
       country: lugar?.country,
       imageurl: lugar?.imageurl,
     });
-    this.ionViewWillEnter();
+
+    this.mostrarToast(respuesta.mensaje, respuesta.tipo);
+
+    //this.ionViewWillEnter();
   }
 
   // ACCION AL APRETAR AVION -> ABRIR MODAL Y CAPTURAR ID SELECCIONADO
@@ -70,27 +77,31 @@ export class LugaresComponent implements OnInit {
     this.modalLugaresAbierto = false;
   }
 
-  // ACCIONES AL CONFIRMAR MODAL -> MODIFICAR PRECIO
+  // ACCIONES AL CONFIRMAR MODAL -> MODIFICAR PRECIO / SE AÑADE MENSAJE DE RESPUESTA
   confirm() {
-    this.servicio.updateMisLugares(this.modalinput, this.xidSeleccionado);
+    var respuesta = this.servicio.updateMisLugares(
+      this.modalinput,
+      this.xidSeleccionado
+    );
     this.modalLugaresAbierto = false;
-    this.ionViewWillEnter();
+    this.mostrarToast(respuesta.mensaje, respuesta.tipo);
   }
 
   //  RECARGA DE LISTADOS AL INICIAR O REALIZAR CAMBIOS
   async ionViewWillEnter() {
     this.misLugares = this.servicio.getMisLugares();
-    this.lugares = await this.servicio.getRegistro();
+    this.lugares = await this.servicio.getRegistro(this.busqueda);
   }
 
-  // ACCION BOTON ELIMINAR -> ELIMINAR EL REGISTRO DEL LISTADO MISLUGARES
+  // ACCION BOTON ELIMINAR -> ELIMINAR EL REGISTRO DEL LISTADO MISLUGARES / SE AÑADE MENSAJE DE RESPUESTA
   eliminarLugar(xid?: string) {
-    this.servicio.deleteMisLugares(xid);
+    var respuesta = this.servicio.deleteMisLugares(xid);
+    this.mostrarToast(respuesta.mensaje, respuesta.tipo);
   }
 
-  // SE UTILIZARA PARA CAPTURAR IMAGEN Y ACTUALIZAR REGISTRO EN LA LISTA ** POR REALIZAR
+  // SE UTILIZARA PARA CAPTURAR IMAGEN Y ACTUALIZAR REGISTRO EN LA LISTA / SE AÑADE MENSAJE DE RESPUESTA
   foto: Photo | null = null;
-  async sacarFoto() {
+  async sacarFoto(xid: string | undefined) {
     this.foto = await Camera.getPhoto({
       quality: 90,
       resultType: CameraResultType.Uri,
@@ -98,6 +109,26 @@ export class LugaresComponent implements OnInit {
       correctOrientation: true,
     });
 
-    console.log(this.foto);
+    var respuesta = this.servicio.updateIMGMisLugares(this.foto.webPath, xid);
+    this.mostrarToast(respuesta.mensaje, respuesta.tipo);
+  }
+
+  // FUNCION PARA REALIZAR NUEVA BUSQUEDA EN EL API
+  async buscarLugar(event: any) {
+    this.busqueda = event.target.value;
+    if (event.target.value !== '') {
+      this.lugares = await this.servicio.getRegistro(this.busqueda);
+    }
+  }
+
+  // MENSAJE DE RESPUESTA DINAMICO
+  async mostrarToast(mensaje: string, tipo: string = 'primary') {
+    const toast = await this.toastController.create({
+      message: mensaje,
+      duration: 3000,
+      position: 'top',
+      color: tipo,
+    });
+    await toast.present();
   }
 }

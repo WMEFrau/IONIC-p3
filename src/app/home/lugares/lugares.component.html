@@ -1,14 +1,11 @@
 <!-- INPUT PARA BUSCADOR ** SIN UTILIDAD AUN -->
 <ion-list>
   <ion-item>
-    <ion-input
-      aria-label="Email"
-      value=""
-      placeholder="buscar"
-      [clearInput]="true"
-    >
-      <ion-icon slot="start" name="search-circle" aria-hidden="true"></ion-icon>
-    </ion-input>
+    <ion-searchbar
+      placeholder="Museo"
+      (ionInput)="buscarLugar($event)"
+      debounce="1000"
+    ></ion-searchbar>
   </ion-item>
 </ion-list>
 
@@ -63,11 +60,17 @@
         <ion-buttons>
           <ion-button (click)="abrirModalLugares(c.xid)">
             <ion-icon name="airplane" class="ion-padding-end"></ion-icon>
-            <ion-label>{{ c.precio | currency : "CLP" }} </ion-label>
+            <ion-label
+              >{{
+                c.precio != null
+                  ? (c.precio | currency : "CLP")
+                  : ("0" | currency : "CLP")
+              }}
+            </ion-label>
           </ion-button>
         </ion-buttons>
         <ion-buttons>
-          <ion-button (click)="sacarFoto()">
+          <ion-button (click)="sacarFoto(c.xid)">
             <ion-icon name="camera"></ion-icon>
           </ion-button>
         </ion-buttons>
