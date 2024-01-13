@@ -59,6 +59,7 @@ export class LugaresComponent implements OnInit {
       name: lugar?.name,
       country: lugar?.country,
       imageurl: lugar?.imageurl,
+      precio: 0,
     });
 
     this.mostrarToast(respuesta.mensaje, respuesta.tipo);

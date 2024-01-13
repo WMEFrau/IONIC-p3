@@ -170,7 +170,7 @@ export interface MisLugares {
   name?: string;
   country?: string;
   imageurl?: string;
-  precio?: number;
+  precio: number;
 }
 
 // ENTIDADES PARA APIS
